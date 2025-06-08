@@ -25,7 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # Use config() from python-decouple to read from .env locally, or OS environment in production.
 SECRET_KEY = config('SECRET_KEY') # No default here. A missing SECRET_KEY in production is a fatal error.
-
 # SECURITY WARNING: don't run with debug turned on in production!
 # Control DEBUG with an environment variable for deployment.
 # Default to True for local development, cast to bool.
