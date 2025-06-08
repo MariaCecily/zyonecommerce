@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os # Import os module to interact with the operating system (for environment variables)
+import os
 from pathlib import Path
-import dj_database_url # Import dj_database_url for parsing PostgreSQL connection string
+import dj_database_url
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,15 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# Use environment variable for SECRET_KEY in production for security
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-rsiv(j(^(lwwyiu7e_d6wy-tzwwgd#w9ra8lx%itmrurt#3+@z') # Use your generated key as default for dev
+# Use config() from python-decouple to read from .env locally, or OS environment in production.
+SECRET_KEY = config('SECRET_KEY') # No default here. A missing SECRET_KEY in production is a fatal error.
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# Control DEBUG with an environment variable for deployment
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+# Control DEBUG with an environment variable for deployment.
+# Default to True for local development, cast to bool.
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allow specific hosts in production. Controlled by environment variable.
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+# In production, Render automatically adds your service's URL to ALLOWED_HOSTS if DEBUG is False
+# However, explicitly listing it is good practice. Use config to read from .env.
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
 # Example for Render: ALLOWED_HOSTS = ['.render.com', 'your-backend-service-name.onrender.com']
 
 
@@ -71,7 +75,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.debug', # Added for debug context
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -86,19 +90,14 @@ WSGI_APPLICATION = 'zyon_ecommerce_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Default to SQLite for local development
+# Use dj_database_url to parse DATABASE_URL environment variable for production (PostgreSQL)
+# Fallback to SQLite for local development if DATABASE_URL is not set.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3'),
+        conn_max_age=600 # Optional: connection max age in seconds
+    )
 }
-
-# Override database settings for Render using DATABASE_URL environment variable
-# dj_database_url will parse the connection string provided by Render
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.parse(DATABASE_URL)
 
 
 # Password validation
@@ -136,13 +135,24 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# Where Django will collect all static files (from all apps) into a single directory for production
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Where collected static files will live in production
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'), # Where your app's static files are located in development
+]
+# Configure Whitenoise to compress and cache static files in production
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Media files (user-uploaded content, like product images)
 MEDIA_URL = '/media/'
 # Where uploaded files will be stored locally (e.g., in your project's `media` folder)
+# IMPORTANT: For production, you will need cloud storage (e.g., AWS S3, Cloudinary)
+# as files uploaded to Render's ephemeral filesystem will be lost on redeployments/restarts.
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -151,29 +161,37 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CORS Headers Configuration ---
 # Required for your React frontend to make requests to this Django backend
+# In production, ONLY list the domains that are allowed to access your API.
+# DO NOT use CORS_ALLOW_ALL_ORIGINS = True in production for security reasons.
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",       # Your React development server (default port)
-    "http://localhost:3001",       # Another common React development port
-    "https://*.onrender.com",      # Allows any subdomain on Render.com to connect
-    # IMPORTANT: Add your specific production frontend URL here when deployed, e.g.:
-    # "https://your-frontend-app-name.onrender.com",
+    "http://localhost:3000",        # Your React development server (default port)
+    "http://localhost:3001",        # Another common React development port
+    # IMPORTANT: Add your specific production frontend URL here when deployed to Render, e.g.:
+    # Example: "https://your-frontend-app-name.onrender.com",
+    # You can also use a wildcard if you have many subdomains, but be careful with security.
+    # "https://*.onrender.com", # More permissive, allows any Render app in *.onrender.com to connect
 ]
 
-# If your frontend needs to send credentials (like cookies/session IDs) to the backend,
+# If your frontend needs to send credentials (like cookies/session IDs/JWTs) to the backend,
 # set this to True. Essential for user authentication flows.
 CORS_ALLOW_CREDENTIALS = True
 
 # --- Django REST Framework Configuration ---
 REST_FRAMEWORK = {
     # Default permission classes for your API.
-    # AllowAny for development, but you'll change this to IsAuthenticated or custom permissions in production.
+    # AllowAny for development. In production, change this to IsAuthenticated or custom permissions.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.AllowAny', # Change to IsAuthenticated in production after adding auth
     ],
     # Specifies parsers to handle different content types in API requests (e.g., JSON, form data, file uploads)
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser', # Essential for handling file uploads (e.g., product images)
+    ],
+    # You might also add renderers like JSONRenderer and browsable API renderer
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer', # Useful for development and testing
     ],
 }
