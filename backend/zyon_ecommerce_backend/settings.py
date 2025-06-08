@@ -79,7 +79,8 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.messages',
+                # CORRECTED LINE: Changed from 'django.template.context_processors.messages'
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -164,7 +165,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # In production, ONLY list the domains that are allowed to access your API.
 # DO NOT use CORS_ALLOW_ALL_ORIGINS = True in production for security reasons.
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",        # Your React development server (default port)
+    "http://localhost:3000",          # Your React development server (default port)
     # Add your specific production frontend URL here when deployed to Render:
     "https://zyon-e-commerce-frontend.onrender.com", # <--- **REPLACE with your actual frontend URL**
     # Or, a more general wildcard for Render subdomains (less secure but common for initial setup)
