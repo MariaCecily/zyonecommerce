@@ -1,6 +1,7 @@
 // pages/categories/[slug].tsx
 
 import React, { useEffect, useState } from 'react'; // Correct import for React hooks
+import { Product, Category } from '../../../src/types'; 
 import { useRouter } from 'next/router';
 import { fetchProducts } from '../../../src/utils/api'; // Assuming you fetch products by category slug here
 // Make sure the path to api.ts is correct: it's likely '../../../src/utils/api'

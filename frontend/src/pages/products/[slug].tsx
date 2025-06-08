@@ -1,6 +1,7 @@
 // pages/products/[slug].js
 
 import React, { useEffect, useState } from 'react';
+import { Product, Category } from '../../../src/types'; 
 import { useRouter } from 'next/router'; // Import useRouter
 import { fetchProductBySlug } from '../../../src/utils/api'; // Adjust path if necessary
 // ... other imports (e.g., your components, types)
