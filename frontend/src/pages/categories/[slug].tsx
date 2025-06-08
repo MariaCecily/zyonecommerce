@@ -1,81 +1,79 @@
-// frontend/src/pages/categories/[slug].tsx
-import React, { useEffect, useState } from 'react';// Import specific Next.js types
-import { fetchCategories, fetchProducts } from '../../utils/api'; // Corrected path relative to pages/[slug]/
-import ProductCard from '../../components/ProductCard'; // Corrected path relative to pages/[slug]/
-import Head from 'next/head';
+// pages/categories/[slug].tsx
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  price: string;
-  image?: string;
-  stock: number;
-  available: boolean;
-  category: {
-    id: number;
-    name: string;
-    slug: string;
-  };
-}
+import React, { useEffect, useState } from 'react'; // Correct import for React hooks
+import { useRouter } from 'next/router';
+import { fetchProducts } from '../../src/utils/api'; // Assuming you fetch products by category slug here
+// Make sure the path to api.ts is correct: it's likely '../../../src/utils/api'
+// depending on your exact file structure.
+// E.g., import { fetchProducts } from '../../../src/utils/api';
 
-interface CategoryPageProps {
-  products: Product[];
-  categoryName: string;
-  categorySlug: string;
-}
 
-export default function CategoryPage({ products, categoryName }: CategoryPageProps) {
+// Remove or comment out GetStaticPaths and GetStaticProps functions entirely:
+// export const getStaticPaths: GetStaticPaths = async () => { ... }
+// export const getStaticProps: GetStaticProps = async ({ params }) => { ... }
+
+
+function CategoryPage() {
+  const router = useRouter();
+  const { slug } = router.query; // Get the category slug from the URL
+  const [products, setProducts] = useState<any[]>([]); // Use a more specific type if you have one
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    // Only attempt to fetch if the category slug is available
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+
+    async function getCategoryProducts() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch products filtered by this category slug
+        // Ensure 'fetchProducts' handles the categorySlug parameter
+        const fetchedProducts = await fetchProducts(slug as string);
+        setProducts(fetchedProducts.results || fetchedProducts); // Adjust based on your API response structure
+      } catch (err: any) {
+        console.error(`Failed to fetch products for category ${slug}:`, err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getCategoryProducts();
+  }, [slug]); // Re-run this effect whenever the slug changes
+
+  // --- Render based on loading, error, or data ---
+  if (loading) {
+    return <p>Loading products for category "{slug}"...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading products: {error.message || 'Unknown error'}</p>;
+  }
+
+  if (products.length === 0) {
+    return <p>No products found for category "{slug}".</p>;
+  }
+
+  // If we reach here, products data is available
   return (
-    <div className="p-4">
-      <Head>
-        <title>{categoryName} - Zyon E-commerce</title>
-        {/* More specific meta tags for SEO */}
-      </Head>
-      <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">{categoryName}</h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.length > 0 ? (
-          products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <p className="col-span-full text-center text-gray-500">No products found in this category.</p>
-        )}
-      </div>
+    <div>
+      <h1>Products in category "{slug}"</h1>
+      {/* Render your list of products */}
+      <ul>
+        {products.map((product) => (
+          <li key={product.id}>
+            {product.name} - ${product.price}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-// getStaticPaths is required for dynamic routes with getStaticProps
-export const getStaticPaths: GetStaticPaths = async () => {
-  const categories = await fetchCategories();
-  const paths = categories.map((category: { slug: string }) => ({
-    params: { slug: category.slug },
-  }));
-
-  return {
-    paths,
-    fallback: 'blocking', // 'blocking' will server-render new paths on demand
-    // For large sites, 'true' (shows loading state) or 'blocking' is better than 'false'
-  };
-};
-
-// getStaticProps to fetch data for each category page
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const categorySlug = params?.slug as string;
-  const products = await fetchProducts(categorySlug);
-
-  const allCategories = await fetchCategories();
-  const currentCategory = allCategories.find((cat: { slug: string }) => cat.slug === categorySlug);
-  const categoryName = currentCategory ? currentCategory.name : categorySlug;
-
-  return {
-    props: {
-      products,
-      categoryName,
-      categorySlug, // Pass slug too if needed on page
-    },
-  };
-};
+export default CategoryPage;
