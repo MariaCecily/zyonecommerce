@@ -1,5 +1,5 @@
 // frontend/src/pages/categories/[slug].tsx
-import { GetStaticProps, GetStaticPaths } from 'next'; // Import specific Next.js types
+import React, { useEffect, useState } from 'react';// Import specific Next.js types
 import { fetchCategories, fetchProducts } from '../../utils/api'; // Corrected path relative to pages/[slug]/
 import ProductCard from '../../components/ProductCard'; // Corrected path relative to pages/[slug]/
 import Head from 'next/head';
