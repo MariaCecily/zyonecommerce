@@ -1,0 +1,50 @@
+// frontend/.eslintrc.json
+{
+  "extends": [
+    "next/core-web-vitals", // Recommended ESLint rules for Next.js, including React
+    "eslint:recommended",   // Basic ESLint recommended rules
+    "plugin:@typescript-eslint/recommended", // Recommended rules for TypeScript
+    "plugin:react/recommended", // Recommended rules for React
+    "plugin:react-hooks/recommended", // Recommended rules for React Hooks
+    "prettier"              // Turns off ESLint rules that conflict with Prettier
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "react-hooks",
+    "prettier" // Integrates Prettier as an ESLint plugin
+  ],
+  "rules": {
+    // Custom rules or overrides go here
+    "prettier/prettier": "warn", // Warns about Prettier formatting issues
+    "react/react-in-jsx-scope": "off", // Not needed in Next.js 13+ (or React 17+)
+    "react/prop-types": "off", // Often not needed when using TypeScript for prop validation
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }], // Warns about unused variables, allows _ prefix
+    "no-console": ["warn", { "allow": ["warn", "error"] }] // Warns about console logs, but allows console.warn and console.error
+  },
+  "settings": {
+    "react": {
+      "version": "detect" // Automatically detects the React version
+    }
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "build/"
+  ]
+}
