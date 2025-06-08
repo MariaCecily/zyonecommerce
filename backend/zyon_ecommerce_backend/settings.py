@@ -33,7 +33,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Allow specific hosts in production. Controlled by environment variable.
 # In production, Render automatically adds your service's URL to ALLOWED_HOSTS if DEBUG is False
 # However, explicitly listing it is good practice. Use config to read from .env.
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', '.onrender.com')
 # Example for Render: ALLOWED_HOSTS = ['.render.com', 'your-backend-service-name.onrender.com']
 
 
