@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'; // Correct import for React hooks
 import { useRouter } from 'next/router';
-import { fetchProducts } from '../../src/utils/api'; // Assuming you fetch products by category slug here
+import { fetchProducts } from '../../../src/utils/api'; // Assuming you fetch products by category slug here
 // Make sure the path to api.ts is correct: it's likely '../../../src/utils/api'
 // depending on your exact file structure.
 // E.g., import { fetchProducts } from '../../../src/utils/api';
