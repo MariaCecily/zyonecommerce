@@ -13,22 +13,30 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
-from decouple import config, Csv
+from decouple import config, Csv # Import Csv for proper list parsing
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY')
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Use config() from python-decouple to read from .env locally, or OS environment in production.
+SECRET_KEY = config('SECRET_KEY') # No default here. A missing SECRET_KEY in production is a fatal error.
+
+# SECURITY WARNING: don't run with debug turned on in production!
+# Control DEBUG with an environment variable for deployment.
+# Default to False for production, cast to bool.
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    # Add your specific Render backend URL here
-    'https://zyon-e-commerce-backend.onrender.com',
-    # Or, a more general wildcard for Render subdomains (less secure but common for initial setup)
-    '.onrender.com',
-]
+# Allow specific hosts in production. Controlled by environment variable.
+# Example: ALLOWED_HOSTS="your-backend-service-name.onrender.com,localhost,127.0.0.1"
+# Ensure your Render backend URL is listed in the environment variable.
+# The default here is for local development if the env var isn't set.
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+
 
 # Application definition
 
@@ -42,6 +50,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework', # Django REST Framework for building APIs
     'corsheaders',    # For Cross-Origin Resource Sharing (React frontend communication)
+    'django_filters', # For powerful filtering in DRF (install: pip install django-filter)
     # Your project apps
     'core',           # Your e-commerce app (where models, views, etc., are)
 ]
@@ -70,7 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.messages',
             ],
         },
     },
@@ -86,7 +95,7 @@ WSGI_APPLICATION = 'zyon_ecommerce_backend.wsgi.application'
 # Fallback to SQLite for local development if DATABASE_URL is not set.
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL')
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3') # Added sqlite default for local dev
     )
 }
 
@@ -156,11 +165,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # DO NOT use CORS_ALLOW_ALL_ORIGINS = True in production for security reasons.
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",        # Your React development server (default port)
-    "http://localhost:3001",        # Another common React development port
-    # IMPORTANT: Add your specific production frontend URL here when deployed to Render, e.g.:
-    # Example: "https://your-frontend-app-name.onrender.com",
-    # You can also use a wildcard if you have many subdomains, but be careful with security.
-    # "https://*.onrender.com", # More permissive, allows any Render app in *.onrender.com to connect
+    # Add your specific production frontend URL here when deployed to Render:
+    "https://zyon-e-commerce-frontend.onrender.com", # <--- **REPLACE with your actual frontend URL**
+    # Or, a more general wildcard for Render subdomains (less secure but common for initial setup)
+    "https://*.onrender.com",
+    # If you have a custom domain for your frontend: "https://www.your-custom-frontend.com",
 ]
 
 # If your frontend needs to send credentials (like cookies/session IDs/JWTs) to the backend,
@@ -185,4 +194,10 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer', # Useful for development and testing
     ],
+    # Add default filter backends here if you use them extensively
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend', # Enable django-filter globally
+    ),
+    # If you typically want to lookup resources by slug:
+    'DEFAULT_MODEL_LOOKUP_FIELD': 'slug', # This sets a *default* but ViewSet.lookup_field overrides it
 }

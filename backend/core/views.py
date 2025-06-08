@@ -1,36 +1,48 @@
-from django.shortcuts import render
-# backend/core/views.py
+# backend/core/views.py (Example)
 from rest_framework import viewsets
-from rest_framework.decorators import action # To add custom actions to viewsets
+from rest_framework.decorators import api_view # For the optional api_root_drf
 from rest_framework.response import Response
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
+from django_filters.rest_framework import DjangoFilterBackend # For filtering products by category
+from .models import Category, Product # Assuming you have these models
+from .serializers import CategorySerializer, ProductSerializer # Assuming you have these serializers
 
-class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+# Optional: View for the API root
+@api_view(['GET'])
+def api_root_drf(request):
     """
-    API endpoint that allows categories to be viewed.
-    Using ReadOnlyModelViewSet as categories are generally static lookup data.
+    Returns a simple message for the API root.
     """
+    return Response({
+        "message": "Zyon E-commerce API is running!",
+        "status": "ok",
+        "endpoints": {
+            "categories": "/api/categories/",
+            "products": "/api/products/",
+            # Add more as you create them
+        }
+    })
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    lookup_field = 'slug' # Allow retrieving a single category by its slug (e.g., /api/categories/home-appliances/)
-
-    # Custom action to get products within a specific category
-    @action(detail=True, methods=['get'])
-    def products(self, request, slug=None):
-        category = self.get_object() # Retrieves the category instance based on slug
-        products = category.products.filter(available=True) # Get all available products in this category
-        # You might want to paginate these products in a real application
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
-
+    lookup_field = 'slug' # If you want to lookup categories by slug instead of pk/ID
 
 class ProductViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows products to be viewed or edited.
-    """
-    queryset = Product.objects.filter(available=True) # Only show available products by default
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'slug' # Allow retrieving a single product by its slug (e.g., /api/products/samsung-washing-machine/)
+    lookup_field = 'slug' # <--- CRITICAL: Set to 'slug' if you fetch products by slug
+    # Add filter backends to allow filtering products by category slug
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        'category__slug': ['exact'], # Assumes Product model has a ForeignKey to Category and Category has a 'slug' field
+        # 'category__id': ['exact'], # Alternatively, filter by category ID
+    }
+    # If you also need search/ordering:
+    # search_fields = ['name', 'description']
+    # ordering_fields = ['name', 'price', 'created_at']
 
-    # You could add custom actions here, e.g., for filtering by price range, etc.
+    # If you want to customize the queryset for products (e.g., only active ones)
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     return queryset.filter(is_active=True)
