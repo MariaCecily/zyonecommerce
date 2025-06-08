@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'; // Import useRouter
-import { fetchProductBySlug } from '../../src/utils/api'; // Adjust path if necessary
+import { fetchProductBySlug } from '../../../src/utils/api'; // Adjust path if necessary
 // ... other imports (e.g., your components, types)
 
 function ProductPage() {
