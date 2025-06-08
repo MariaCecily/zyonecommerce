@@ -18,24 +18,17 @@ from decouple import config, Csv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# Use config() from python-decouple to read from .env locally, or OS environment in production.
-SECRET_KEY = config('SECRET_KEY') # No default here. A missing SECRET_KEY in production is a fatal error.
-# SECURITY WARNING: don't run with debug turned on in production!
-# Control DEBUG with an environment variable for deployment.
-# Default to True for local development, cast to bool.
+SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-# Allow specific hosts in production. Controlled by environment variable.
-# In production, Render automatically adds your service's URL to ALLOWED_HOSTS if DEBUG is False
-# However, explicitly listing it is good practice. Use config to read from .env.
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', '.onrender.com')
-# Example for Render: ALLOWED_HOSTS = ['.render.com', 'your-backend-service-name.onrender.com']
-
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    # Add your specific Render backend URL here
+    'https://zyon-e-commerce-backend.onrender.com',
+    # Or, a more general wildcard for Render subdomains (less secure but common for initial setup)
+    '.onrender.com',
+]
 
 # Application definition
 
