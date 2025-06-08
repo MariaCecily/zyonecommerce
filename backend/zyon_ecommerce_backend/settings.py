@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
-from decouple import config
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,12 +28,12 @@ SECRET_KEY = config('SECRET_KEY') # No default here. A missing SECRET_KEY in pro
 # SECURITY WARNING: don't run with debug turned on in production!
 # Control DEBUG with an environment variable for deployment.
 # Default to True for local development, cast to bool.
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Allow specific hosts in production. Controlled by environment variable.
 # In production, Render automatically adds your service's URL to ALLOWED_HOSTS if DEBUG is False
 # However, explicitly listing it is good practice. Use config to read from .env.
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 # Example for Render: ALLOWED_HOSTS = ['.render.com', 'your-backend-service-name.onrender.com']
 
 
@@ -93,8 +93,7 @@ WSGI_APPLICATION = 'zyon_ecommerce_backend.wsgi.application'
 # Fallback to SQLite for local development if DATABASE_URL is not set.
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='sqlite:///db.sqlite3'),
-        conn_max_age=600 # Optional: connection max age in seconds
+        default=config('DATABASE_URL')
     )
 }
 
