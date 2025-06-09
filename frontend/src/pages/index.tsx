@@ -1,7 +1,7 @@
 // pages/index.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Product, Category } from '../utils/types';
+import { Product, Category } from '../types';
 import { fetchProducts, fetchCategories } from '../../src/utils/api';
 
 function HomePage() {

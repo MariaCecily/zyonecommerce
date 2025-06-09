@@ -1,7 +1,7 @@
 // pages/categories/[slug].tsx
 
 import React, { useEffect, useState } from 'react'; // Correct import for React hooks
-import { Product } from '../../../src/utils/types'; // Removed 'Category' if not used in this file
+import { Product } from '../../types';
 import { useRouter } from 'next/router';
 import { fetchProducts } from '../../../src/utils/api'; // Assuming you fetch products by category slug here
 

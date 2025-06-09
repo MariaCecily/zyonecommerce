@@ -1,7 +1,7 @@
 // pages/products/[slug].tsx (assuming this is your actual file extension)
 
 import React, { useEffect, useState } from 'react';
-import { Product } from '../../types'; // Removed 'Category' as it's not used here
+import { Product } from '../../types';
 import { useRouter } from 'next/router'; // Import useRouter
 import { fetchProductBySlug } from '../../../src/utils/api'; // Adjust path if necessary
 
