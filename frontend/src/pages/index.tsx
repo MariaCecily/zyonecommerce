@@ -1,58 +1,81 @@
-// frontend/src/pages/index.tsx
-import { fetchProducts } from '../utils/api'; // Corrected path relative to pages/
-import ProductCard from '../components/ProductCard'; // Corrected path relative to pages/
-import Head from 'next/head'; // For page-specific metadata
+// pages/index.tsx
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  price: string;
-  image?: string;
-  stock: number;
-  available: boolean;
-  category: {
-    id: number;
-    name: string;
-    slug: string;
-  };
-}
+import React, { useEffect, useState } from 'react';
+import { Product, Category } from '../../../src/types'; // Assuming you need these types
+import { fetchProducts, fetchCategories } from '../../../src/utils/api'; // Adjust path if necessary
 
-interface HomePageProps {
-  products: Product[];
-}
+function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // If you display categories too
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-export default function HomePage({ products }: HomePageProps) {
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch products for the homepage
+        const fetchedProducts = await fetchProducts(); // Call without category slug for all products
+        setProducts(fetchedProducts);
+
+        // If you also display categories on the homepage
+        const fetchedCategories = await fetchCategories();
+        setCategories(fetchedCategories);
+
+      } catch (err: unknown) {
+        console.error('Error fetching homepage data:', err);
+        if (err instanceof Error) {
+          setError(err);
+        } else {
+          setError(new Error(String(err)));
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []); // Empty dependency array means this effect runs once after the initial render
+
+  if (loading) {
+    return <p>Loading homepage content...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading homepage: {error.message || 'Unknown error'}</p>;
+  }
+
   return (
-    <div className="p-4">
-      <Head>
-        <title>Zyon E-commerce - Home</title>
-        {/* You can add more specific meta tags here */}
-      </Head>
-      <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Welcome to Zyon Store!</h1>
-      <p className="text-xl text-center text-gray-600 mb-12">Discover our amazing products across various categories.</p>
+    <div>
+      <h1>Welcome to Zyon E-commerce!</h1>
+      <h2>Featured Products</h2>
+      {products.length === 0 ? (
+        <p>No products available.</p>
+      ) : (
+        <ul>
+          {products.map((product) => (
+            <li key={product.id}>
+              {product.name} - ${product.price}
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <h2 className="text-3xl font-semibold mb-6 text-gray-800">Featured Products</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.length > 0 ? (
-          products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <p className="col-span-full text-center text-gray-500">No products found. Please add some from the Django admin!</p>
-        )}
-      </div>
+      {/* Optional: Display categories if needed */}
+      {categories.length > 0 && (
+        <>
+          <h2>Categories</h2>
+          <ul>
+            {categories.map((category) => (
+              <li key={category.id}>{category.name}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
 
-// Data fetching function for static site generation
-export async function getStaticProps() {
-  const products = await fetchProducts();
-  return {
-    props: {
-      products,
-    },
-  };
-}
+export default HomePage;
