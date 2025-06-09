@@ -36,7 +36,7 @@ function CategoryPage() {
         // Fetch products filtered by this category slug
         // Ensure 'fetchProducts' handles the categorySlug parameter
         const fetchedProducts = await fetchProducts(slug as string);
-        setProducts(fetchedProducts.results || fetchedProducts); // Adjust based on your API response structure
+        setProducts(fetchedProducts);
       } catch (err: any) {
         console.error(`Failed to fetch products for category ${slug}:`, err);
         setError(err);
