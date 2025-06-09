@@ -1,15 +1,15 @@
-// pages/products/[slug].js
+// pages/products/[slug].tsx (assuming this is your actual file extension)
 
 import React, { useEffect, useState } from 'react';
-import { Product, Category } from '../../../src/types'; 
+import { Product } from '../../../src/types'; // Removed 'Category' as it's not used here
 import { useRouter } from 'next/router'; // Import useRouter
 import { fetchProductBySlug } from '../../../src/utils/api'; // Adjust path if necessary
-// ... other imports (e.g., your components, types)
+
 
 function ProductPage() {
   const router = useRouter();
   const { slug } = router.query; // Get the slug from the URL
-  const [product, setProduct] = useState<any | null>(null); // Use a more specific type if you have one
+  const [product, setProduct] = useState<Product | null>(null); // Use a more specific type if you have one
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -28,9 +28,13 @@ function ProductPage() {
         // Fetch product using the slug
         const fetchedProduct = await fetchProductBySlug(slug as string);
         setProduct(fetchedProduct);
-      } catch (err: any) { // Catch potential errors from the API call
+      } catch (err: unknown) { // Changed 'any' to 'unknown'
         console.error(`Failed to fetch product with slug ${slug}:`, err);
-        setError(err); // Set the error state
+        if (err instanceof Error) { // Check if it's an Error instance
+          setError(err); // Set the error state
+        } else {
+          setError(new Error(String(err))); // Convert unknown error to an Error object
+        }
       } finally {
         setLoading(false); // Stop loading regardless of success or failure
       }
