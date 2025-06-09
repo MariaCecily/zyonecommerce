@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Product, Category } from '../utils/types';
-import { fetchProducts, fetchCategories } from '../../../src/utils/api';
+import { fetchProducts, fetchCategories } from '../../src/utils/api';
 
 function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
