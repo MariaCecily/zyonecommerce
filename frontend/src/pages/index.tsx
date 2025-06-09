@@ -1,8 +1,8 @@
 // pages/index.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Product, Category } from '../../../src/types'; // Assuming you need these types
-import { fetchProducts, fetchCategories } from '../../../src/utils/api'; // Adjust path if necessary
+import { Product, Category } from '../utils/types';
+import { fetchProducts, fetchCategories } from '../../../src/utils/api';
 
 function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
