@@ -24,7 +24,7 @@ function HomePage() {
         const fetchedCategories = await fetchCategories();
         setCategories(fetchedCategories);
 
-      } catch (err: unknown) {
+      } catch (err: unknown) { // Corrected from 'any' to 'unknown'
         console.error('Error fetching homepage data:', err);
         if (err instanceof Error) {
           setError(err);
